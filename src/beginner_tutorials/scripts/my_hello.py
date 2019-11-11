@@ -6,7 +6,6 @@ import numpy as np
 
 
 
-
 def say(name):
     print("Hello my dearest " +name)
     img = cv2.imread('src/beginner_tutorials/images/DSC00116.JPG',0)
