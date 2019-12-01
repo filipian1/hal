@@ -1,0 +1,29 @@
+<xacro:macro name ="bogie" params="lr tY">
+
+<link name="${lr}_bogie">
+  <collision>
+    <origin xyz="${bogieLength*1.41/4} 0 -${bogieLength*1.41/4}" rpy="0 ${PI/4} 0" />
+    
+    
+    <geometry>
+      <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
+    </geometry>
+  </collision>
+
+<visual>
+    <origin xyz="${bogieLength*1.41/4} 0 -${bogieLength*1.41/4}" rpy="0 ${PI/4} 0" />
+    <geometry>
+       <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
+    </geometry>
+    <material name="Red"/>
+  </visual>
+
+  <inertial>
+    <origin xyz="${bogieLength*1.41/4} 0 -${bogieLength*1.41/4}" rpy="0 ${PI/4} 0" />
+      <mass value="${bogieMass}"/>
+      <box_inertia m="${bogieMass}" x="${bogieLength}" y="${bogieWidth}" z="${bogieWidth}"/>
+  </inertial>
+
+
+  
+</link>

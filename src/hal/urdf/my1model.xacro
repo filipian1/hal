@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<robot name="my1model" xmlns:xacro="http://www.ros.org/wiki/xacro">
+        <!-- Put here the robot description -->
+
+<xacro:property name="PI" value="3.1415926535897931"/>
+
+<xacro:property name="chassisHeight" value="0.1"/>
+<xacro:property name="chassisLength" value="0.4"/>
+<xacro:property name="chassisWidth" value="0.2"/>
+<xacro:property name="chassisMass" value="0.2"/>
+
+
+<xacro:property name="wheelWidth" value="0.05"/>
+<xacro:property name="wheelRadius" value="0.07"/>
+<xacro:property name="wheelPos" value="0.2"/>
+<xacro:property name="wheelMass" value="0.3"/>
+
+<xacro:property name="rockerMass" value="0.5"/>
+<xacro:property name="rockerWidth" value="0.02"/>
+<xacro:property name="rockerLengthFront" value="0.15"/>
+<xacro:property name="rockerLengthBack" value="0.3"/>
+
+
+<xacro:property name="bogieMass" value="0.3"/>
+<xacro:property name="bogieWidth" value="0.02"/>
+<xacro:property name="bogieLength" value="0.15"/>
+
+
+
+<xacro:property name="cameraSize" value="0.05"/>
+<xacro:property name="cameraMass" value="0.1"/>
+
+ <xacro:include filename="$(find hal)/urdf/my1model.gazebo" />
+ <xacro:include filename="$(find hal)/urdf/materials.xacro" />
+ <xacro:include filename="$(find hal)/urdf/macros.xacro" />
+
+
+<link name="footprint" />
+
+<joint name="base_joint" type="fixed">
+  <parent link="footprint"/>
+  <child link="chassis"/>
+  <origin xyz="0 0 ${wheelRadius+rockerLengthBack*1.41/2}" rpy="0 0 0"/>
+</joint>
+
+
+<link name='chassis'>
+  <collision> 
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+    <geometry> 
+      <box size="${chassisLength} ${chassisWidth} ${chassisHeight}"/> 
+    </geometry> 
+  </collision>
+  <visual> 
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+    <geometry> 
+      <box size="${chassisLength} ${chassisWidth} ${chassisHeight}"/> 
+    </geometry> 
+    <material name="grey"/>
+  </visual>
+  <inertial> 
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+    <mass value="${chassisMass}"/> 
+    <box_inertia m="${chassisMass}" x="${chassisLength}" y="${chassisWidth}" z="${chassisHeight}"/>
+  </inertial>
+</link>
+
+
+
+ 
+<wheel  lr="left" tY="1" fmb="front" tX="1" rb="bogie" tZ="-1" width_rb="${bogieWidth}" length_rb="${bogieLength}"/>  
+<wheel  lr="right" tY="-1" fmb="front" tX="1" rb="bogie" tZ="-1" width_rb="${bogieWidth}" length_rb="${bogieLength}"/>
+
+<wheel  lr="left" tY="1" fmb="middle" tX="-1" rb="bogie" tZ="-1" width_rb="${bogieWidth}" length_rb="${bogieLength}"/>  
+<wheel  lr="right" tY="-1" fmb="middle" tX="-1" rb="bogie" tZ="-1" width_rb="${bogieWidth}" length_rb="${bogieLength}"/>
+
+<wheel  lr="left" tY="1" fmb="back" tX="-1" rb="rocker" tZ="-1" width_rb="${rockerWidth}" length_rb="${rockerLengthBack}"/>  
+<wheel  lr="right" tY="-1" fmb="back" tX="-1" rb="rocker" tZ="-1" width_rb="${rockerWidth}" length_rb="${rockerLengthBack}"/> 
+
+<rocker  lr="left" tY="1"/>
+<rocker  lr="right" tY="-1"/>
+
+<bogie  lr="left" tY="1"/>
+<bogie  lr="right" tY="-1"/>
+</robot>

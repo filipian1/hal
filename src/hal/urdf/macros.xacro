@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<robot name="my1model" xmlns:xacro="http://www.ros.org/wiki/xacro">
+        <!-- Put here the robot description -->
+
+
+<xacro:macro name="cylinder_inertia" params="m r h">
+  <inertia  ixx="${m*(3*r*r+h*h)/12}" ixy = "0" ixz = "0"
+    iyy="${m*(3*r*r+h*h)/12}" iyz = "0"
+    izz="${m*r*r/2}"
+  />
+</xacro:macro>
+
+<xacro:macro name="box_inertia" params="m x y z">
+  <inertia  ixx="${m*(y*y+z*z)/12}" ixy = "0" ixz = "0"
+    iyy="${m*(x*x+z*z)/12}" iyz = "0"
+    izz="${m*(x*x+z*z)/12}"
+  />
+</xacro:macro>
+
+<xacro:macro name="sphere_inertia" params="m r">
+  <inertia  ixx="${2*m*r*r/5}" ixy = "0" ixz = "0"
+    iyy="${2*m*r*r/5}" iyz = "0"
+    izz="${2*m*r*r/5}"
+  />
+</xacro:macro>
+
+
+
+<xacro:macro name ="rocker" params="lr tY">
+
+<link name="${lr}_rocker">
+  <collision>
+    <origin xyz="${rockerLengthFront*1.41/4} 0 -${rockerLengthFront*1.41/4}" rpy="0 ${PI/4} 0" />
+    <geometry>
+      <box size="${rockerLengthFront} ${rockerWidth} ${rockerWidth}"/>
+    </geometry>
+  </collision>
+
+<visual>
+    <origin xyz="${rockerLengthFront*1.41/4} 0 -${rockerLengthFront*1.41/4}" rpy="0 ${PI/4} 0" />
+    <geometry>
+       <box size="${rockerLengthFront} ${rockerWidth} ${rockerWidth}"/>
+    </geometry>
+    <material name="blue"/>
+  </visual>
+
+  <inertial>
+    <origin xyz="${rockerLengthFront*1.41/4} 0 -${rockerLengthFront*1.41/4}" rpy="0 ${PI/4} 0" />
+      <mass value="${rockerMass}"/>
+      <box_inertia m="${rockerMass}" x="${rockerLengthFront}" y="${rockerWidth}" z="${rockerWidth}"/>
+  </inertial>
+
+
+  <collision>
+    <origin xyz="${-rockerLengthBack*1.41/4} 0 -${rockerLengthBack*1.41/4}" rpy="0 ${-PI/4} 0" />
+
+    <geometry>
+      <box size="${rockerLengthBack} ${rockerWidth} ${rockerWidth}"/>
+    </geometry>
+  </collision>
+
+ <visual>
+    <origin xyz="${-rockerLengthBack*1.41/4} 0 -${rockerLengthBack*1.41/4}" rpy="0 ${-PI/4} 0" />
+    <geometry>
+       <box size="${rockerLengthBack} ${rockerWidth} ${rockerWidth}"/>
+    </geometry>
+    <material name="black"/>
+  </visual>
+
+  <inertial>
+    <origin xyz="${-rockerLengthBack*1.41/4} 0 -${rockerLengthBack*1.41/4}" rpy="0 ${-PI/4} 0" />
+      <mass value="${rockerMass}"/>
+      <box_inertia m="${rockerMass}" x="${rockerLengthBack}" y="${rockerWidth}" z="${rockerWidth}"/>
+  </inertial>
+
+  
+</link>
+
+<gazebo reference="${lr}_rocker">
+  <mu1 value="1.0"/>
+  <mu2 value="1.0"/>
+  <kp  value="0.0" />
+  <kd  value="0.0" />
+  <fdir1 value="1 0 0"/>
+  <material>Gazebo/Red</material>
+</gazebo>
+
+
+<joint name="${lr}_rocker_hinge" type="revolute">
+  <parent link="chassis"/>
+  <child link="${lr}_rocker"/>
+  <origin xyz="0 ${tY*rockerWidth/2+tY*chassisWidth/2} 0" rpy="0 0 0" />
+  <axis xyz="0 1 0" rpy="0 0 0" />
+  <limit effort="1" lower="${-PI/6}" upper="${PI/6}" velocity="0.0001"/>
+  <joint_properties damping="0.0" friction="0.0"/>
+</joint>
+
+
+</xacro:macro>
+
+
+<xacro:macro name ="bogie" params="lr tY">
+
+<link name="${lr}_bogie">
+  <collision>
+    <origin xyz="${bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${PI/4} 0" /> 
+    <geometry>
+      <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
+    </geometry>
+  </collision>
+
+<visual>
+    <origin xyz="${bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${PI/4} 0" /> 
+    <geometry>
+       <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
+    </geometry>
+    <material name="blue"/>
+  </visual>
+
+  <inertial>
+    <origin xyz="${bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${PI/4} 0" /> 
+      <mass value="${bogieMass}"/>
+      <box_inertia m="${bogieMass}" x="${bogieLength}" y="${bogieWidth}" z="${bogieWidth}"/>
+  </inertial>
+
+
+  <collision>
+    <origin xyz="${-bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${-PI/4} 0" /> 
+    <geometry>
+      <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
+    </geometry>
+  </collision>
+
+<visual>
+    <origin xyz="${-bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${-PI/4} 0" /> 
+    <geometry>
+       <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
+    </geometry>
+    <material name="blue"/>
+  </visual>
+
+  <inertial>
+    <origin xyz="${-bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${-PI/4} 0" /> 
+      <mass value="${bogieMass}"/>
+      <box_inertia m="${bogieMass}" x="${bogieLength}" y="${bogieWidth}" z="${bogieWidth}"/>
+  </inertial>
+
+  
+</link>
+
+<gazebo reference="${lr}_bogie">
+  <mu1 value="1.0"/>
+  <mu2 value="1.0"/>
+  <kp  value="0.0" />
+  <kd  value="0.0" />
+  <fdir1 value="1 0 0"/>
+  <material>Gazebo/Black</material>
+</gazebo>
+
+
+<joint name="${lr}_bogie_hinge" type="revolute">
+  <parent link="${lr}_rocker"/>
+  <child link="${lr}_bogie"/>
+<origin xyz="${rockerLengthFront*1.41/2} ${tY*rockerWidth/2+tY*bogieWidth/2} -${rockerLengthFront*1.41/2}" rpy="0 0 0" />
+  <axis xyz="0 1 0" rpy="0 0 0" />
+  <limit effort="1" lower="${-PI/6}" upper="${PI/6}" velocity="0.0001"/>
+  <joint_properties damping="0.0" friction="0.0"/>
+</joint>
+
+
+</xacro:macro>
+
+
+
+<xacro:macro name="wheel" params="lr tY fmb tX rb tZ width_rb length_rb">
+
+<link name="${lr}_${fmb}_wheel">
+  <collision>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} ${PI/2}" />
+    <geometry>
+      <cylinder length="${wheelWidth}" radius="${wheelRadius}"/>
+    </geometry>
+  </collision>
+
+  <visual>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} ${PI/2}" />
+    <geometry>
+      <cylinder length="${wheelWidth}" radius="${wheelRadius}"/>
+    </geometry>
+    <material name="black"/>
+  </visual>
+
+  <inertial>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} ${PI/2}" />
+    <mass value="${wheelMass}"/>
+    <cylinder_inertia m="${wheelMass}" r="${wheelRadius}" h="${wheelWidth}"/>
+  </inertial>
+</link>
+
+<gazebo reference="${lr}_${fmb}_wheel">
+  <mu1 value="1.0"/>
+  <mu2 value="1.0"/>
+  <kp  value="0.0" />
+  <kd  value="0.0" />
+  <fdir1 value="1 0 0"/>
+  <material>Gazebo/Black</material>
+</gazebo>
+
+
+<joint name="${lr}_${fmb}_wheel_hinge" type="continuous">
+  <parent link="${lr}_${rb}"/>
+  <child link="${lr}_${fmb}_wheel"/>
+  
+<origin xyz="${tX*length_rb*1.41/2} ${tY*width_rb/2+tY*wheelWidth/2} ${tZ*length_rb*1.41/2}" rpy="0 0 0" />
+  <axis xyz="0 1 0" rpy="0 0 0" />
+  <limit effort="1" velocity="10"/>
+  <joint_properties damping="0.1" friction="1.0"/>
+</joint>
+
+
+<transmission name="${lr}_${fmb}_trans">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="${lr}_${fmb}_wheel_hinge"/>
+  <actuator name="${lr}_${fmb}_Motor">
+    <hardwareInterface>EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>10</mechanicalReduction>
+  </actuator>
+</transmission>
+
+</xacro:macro>
+
+</robot>

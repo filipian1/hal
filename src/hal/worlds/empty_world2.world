@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<sdf version ="1.5" >
+   <world name="my_second_world">
+   <include>
+      <uri>model://sun</uri>
+   </include>
+
+   <include>
+      <uri>model://postbox</uri>
+      <static>false</static>
+      <pose>3 1 30 0 0 0</pose>
+   </include>
+
+   <include>
+      <uri>model://postbox</uri>
+      <static>false</static>
+      <pose>3 3 1 0 0 0</pose>
+   </include>
+
+
+<include>
+      <uri>model://postbox</uri>
+      <static>false</static>
+      <pose>1 2 30 0 0 0</pose>
+   </include>
+
+
+    <include>
+    <uri>model://ground_plane</uri>
+   </include>
+</world>
+</sdf>
