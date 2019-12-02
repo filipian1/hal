@@ -5,7 +5,7 @@
       <uri>model://sun</uri>
    </include>
 
-   <include>
+   <!-- <include>
       <uri>model://postbox</uri>
       <static>false</static>
       <pose>3 1 30 0 0 0</pose>
@@ -22,7 +22,7 @@
       <uri>model://postbox</uri>
       <static>false</static>
       <pose>1 2 30 0 0 0</pose>
-   </include>
+   </include> -->
 
 
     <include>

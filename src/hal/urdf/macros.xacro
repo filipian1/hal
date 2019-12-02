@@ -73,7 +73,7 @@
       <box_inertia m="${rockerMass}" x="${rockerLengthBack}" y="${rockerWidth}" z="${rockerWidth}"/>
   </inertial>
 
-  
+
 </link>
 
 <gazebo reference="${lr}_rocker">
@@ -81,7 +81,7 @@
   <mu2 value="1.0"/>
   <kp  value="0.0" />
   <kd  value="0.0" />
-  <fdir1 value="1 0 0"/>
+  <!-- <fdir1 value="1 0 0"/> -->
   <material>Gazebo/Red</material>
 </gazebo>
 
@@ -103,14 +103,14 @@
 
 <link name="${lr}_bogie">
   <collision>
-    <origin xyz="${bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${PI/4} 0" /> 
+    <origin xyz="${bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${PI/4} 0" />
     <geometry>
       <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
     </geometry>
   </collision>
 
 <visual>
-    <origin xyz="${bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${PI/4} 0" /> 
+    <origin xyz="${bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${PI/4} 0" />
     <geometry>
        <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
     </geometry>
@@ -118,21 +118,21 @@
   </visual>
 
   <inertial>
-    <origin xyz="${bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${PI/4} 0" /> 
+    <origin xyz="${bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${PI/4} 0" />
       <mass value="${bogieMass}"/>
       <box_inertia m="${bogieMass}" x="${bogieLength}" y="${bogieWidth}" z="${bogieWidth}"/>
   </inertial>
 
 
   <collision>
-    <origin xyz="${-bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${-PI/4} 0" /> 
+    <origin xyz="${-bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${-PI/4} 0" />
     <geometry>
       <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
     </geometry>
   </collision>
 
 <visual>
-    <origin xyz="${-bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${-PI/4} 0" /> 
+    <origin xyz="${-bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${-PI/4} 0" />
     <geometry>
        <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
     </geometry>
@@ -140,12 +140,12 @@
   </visual>
 
   <inertial>
-    <origin xyz="${-bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${-PI/4} 0" /> 
+    <origin xyz="${-bogieLength*1.41/4} 0 ${-bogieLength*1.41/4}" rpy="0 ${-PI/4} 0" />
       <mass value="${bogieMass}"/>
       <box_inertia m="${bogieMass}" x="${bogieLength}" y="${bogieWidth}" z="${bogieWidth}"/>
   </inertial>
 
-  
+
 </link>
 
 <gazebo reference="${lr}_bogie">
@@ -153,7 +153,7 @@
   <mu2 value="1.0"/>
   <kp  value="0.0" />
   <kd  value="0.0" />
-  <fdir1 value="1 0 0"/>
+  <!-- <fdir1 value="1 0 0"/> -->
   <material>Gazebo/Black</material>
 </gazebo>
 
@@ -192,17 +192,17 @@
 
   <inertial>
     <origin xyz="0 0 0" rpy="0 ${PI/2} ${PI/2}" />
-    <mass value="${wheelMass}"/>
-    <cylinder_inertia m="${wheelMass}" r="${wheelRadius}" h="${wheelWidth}"/>
-  </inertial>
+   <mass value="${wheelMass}"/>
+    <cylinder_inertia m="${wheelMass}" r="${wheelRadius}" h="${wheelWidth}"/> 
+</inertial>
 </link>
 
 <gazebo reference="${lr}_${fmb}_wheel">
-  <mu1 value="1.0"/>
-  <mu2 value="1.0"/>
-  <kp  value="0.0" />
-  <kd  value="0.0" />
-  <fdir1 value="1 0 0"/>
+  <mu1 value="200.0"/>
+  <mu2 value="100.0"/>
+  <kp  value="100000000.0" />
+  <kd  value="1.0" />
+  <!-- <fdir1 value="1 0 0"/> -->
   <material>Gazebo/Black</material>
 </gazebo>
 
@@ -210,21 +210,26 @@
 <joint name="${lr}_${fmb}_wheel_hinge" type="continuous">
   <parent link="${lr}_${rb}"/>
   <child link="${lr}_${fmb}_wheel"/>
-  
+
 <origin xyz="${tX*length_rb*1.41/2} ${tY*width_rb/2+tY*wheelWidth/2} ${tZ*length_rb*1.41/2}" rpy="0 0 0" />
   <axis xyz="0 1 0" rpy="0 0 0" />
-  <limit effort="1" velocity="10"/>
-  <joint_properties damping="0.1" friction="1.0"/>
+  <limit effort="1" velocity="0"/>
+  <joint_properties damping="0.1" friction="0.02"/>
 </joint>
 
 
 <transmission name="${lr}_${fmb}_trans">
   <type>transmission_interface/SimpleTransmission</type>
-  <joint name="${lr}_${fmb}_wheel_hinge"/>
+
   <actuator name="${lr}_${fmb}_Motor">
-    <hardwareInterface>EffortJointInterface</hardwareInterface>
+    <!-- <hardwareInterface>EffortJointInterface</hardwareInterface> -->
     <mechanicalReduction>10</mechanicalReduction>
   </actuator>
+
+  <joint name="${lr}_${fmb}_wheel_hinge">
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
+  </joint>
+
 </transmission>
 
 </xacro:macro>
