@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<launch> 
+  <arg name="map_file" value="~/catkin_ws/src/hal/maps/playpen_map.yaml">
+  </arg> 
+  <node pkg="map_server" type="map_server" name="map_server" args="$(arg map_file)"> 
+  </node> 
+</launch>
+

@@ -26,6 +26,228 @@
 
 
 
+<xacro:macro name="camera">
+<!-- Camera -->
+ 
+
+  <link name="camera_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+    <box size="${cameraSize} ${cameraSize} ${cameraSize}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${cameraSize} ${cameraSize} ${cameraSize}"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <mass value="${cameraMass}" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+        <box_inertia m="${cameraMass}" x="${cameraSize}" y="${cameraSize}" z="${cameraSize}"/>
+    </inertial>
+  </link>
+
+
+<joint name="camera_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="${chassisLength/2 - cameraSize/2} 0 ${chassisHeight/2 + cameraSize/2}" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+<gazebo reference="camera_link">
+      <material>Gazebo/Red</material>
+
+    <sensor type="camera" name="camera1">
+      <update_rate>30.0</update_rate>
+
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+      <!-- <horizontal_fov>0.5</horizontal_fov>
+        <image>
+          <width>1960</width>
+          <height>1080</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip> -->
+        <!-- <noise>
+          <type>gaussian</type>
+          Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1].
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise> -->
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>camera1</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+
+      <image>
+          <width>1960</width>
+          <height>1080</height>
+          <format>R8G8B8</format>
+        </image>
+    </sensor>
+  </gazebo>
+
+</xacro:macro>
+
+<xacro:macro name="imu">
+
+<link name="imu">
+
+<collision>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <box size="${imuSize} ${imuSize} ${imuSize}"/>
+    </geometry>
+</collision>
+
+  <visual>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+            <box size="${imuSize} ${imuSize} ${imuSize}"/>
+    </geometry>
+
+  </visual>
+
+  <inertial>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="${imuMass}"/>
+      <box_inertia m="${imuMass}" x="${imuSize}" y="${imuSize}" z="${imuSize}"/>
+
+  </inertial>
+</link>
+
+<joint name="imu_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="imu"/>
+  <origin xyz="0 0 ${chassisHeight/2 + imuSize/2}" rpy="0 0 0" />
+</joint>
+
+  <gazebo reference="imu">
+    <material>Gazebo/Red</material>
+
+    <gravity>true</gravity>
+    <sensor type="imu" name="imu_sensor1" >
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
+      <topic>__default_topic__</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <topicName>imu/data</topicName>
+        <bodyName>imu_link</bodyName>
+        <updateRateHZ>10.0</updateRateHZ>
+        <gaussianNoise>0.0</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>imu</frameName>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
+</xacro:macro>
+
+
+<xacro:macro name="lidar">
+
+<link name="lidar">
+
+<collision>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <box size="${lidarSize} ${lidarSize} ${lidarSize}"/>
+    </geometry>
+</collision>
+
+  <visual>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="model://hokuyo/meshes/hokuyo.dae"/>
+    </geometry>
+  </visual>
+
+  <inertial>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="${lidarMass}"/>
+      <box_inertia m="${lidarMass}" x="${lidarSize}" y="${lidarSize}" z="${lidarSize}"/>
+
+  </inertial>
+
+</link>
+
+<gazebo reference="lidar">
+  <mu1 value="100.0"/>
+  <mu2 value="100.0"/>
+  <kp  value="10000.0" />
+  <kd  value="1.0" />
+  
+  <sensor type="ray" name="head_hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>40</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-2.09</min_angle>
+            <max_angle>2.09</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>3.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <topicName>lidar/scan</topicName>
+        <frameName>lidar</frameName>
+      </plugin>
+    </sensor>
+
+
+</gazebo>
+
+<joint name="lidar" type="fixed">
+  <parent link="base_link"/>
+  <child link="lidar"/>
+  <origin xyz="${chassisLength/2 - lidarSize/2} 0 ${-chassisHeight/2 - lidarSize/2}" rpy="${PI} 0 0" />
+</joint>
+
+
+</xacro:macro>
+
+
+
 <xacro:macro name ="rocker" params="lr tY">
 
 <link name="${lr}_rocker">
@@ -41,7 +263,6 @@
     <geometry>
        <box size="${rockerLengthFront} ${rockerWidth} ${rockerWidth}"/>
     </geometry>
-    <material name="blue"/>
   </visual>
 
   <inertial>
@@ -64,7 +285,6 @@
     <geometry>
        <box size="${rockerLengthBack} ${rockerWidth} ${rockerWidth}"/>
     </geometry>
-    <material name="black"/>
   </visual>
 
   <inertial>
@@ -77,22 +297,21 @@
 </link>
 
 <gazebo reference="${lr}_rocker">
-  <mu1 value="1.0"/>
-  <mu2 value="1.0"/>
-  <kp  value="0.0" />
-  <kd  value="0.0" />
-  <!-- <fdir1 value="1 0 0"/> -->
+  <mu1 value="100.0"/>
+  <mu2 value="100.0"/>
+  <kp  value="10000.0" />
+  <kd  value="1.0" />
   <material>Gazebo/Red</material>
 </gazebo>
 
 
-<joint name="${lr}_rocker_hinge" type="revolute">
-  <parent link="chassis"/>
+<joint name="${lr}_rocker_hinge" type="fixed">
+  <parent link="base_link"/>
   <child link="${lr}_rocker"/>
   <origin xyz="0 ${tY*rockerWidth/2+tY*chassisWidth/2} 0" rpy="0 0 0" />
-  <axis xyz="0 1 0" rpy="0 0 0" />
-  <limit effort="1" lower="${-PI/6}" upper="${PI/6}" velocity="0.0001"/>
-  <joint_properties damping="0.0" friction="0.0"/>
+  <!-- <axis xyz="0 1 0" rpy="0 0 0" />
+  <limit effort="100" lower="${-PI/24}" upper="${PI/24}" velocity="0.0001"/>
+  <joint_properties damping="0.2" friction="0.6"/> -->
 </joint>
 
 
@@ -114,7 +333,6 @@
     <geometry>
        <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
     </geometry>
-    <material name="blue"/>
   </visual>
 
   <inertial>
@@ -136,7 +354,6 @@
     <geometry>
        <box size="${bogieLength} ${bogieWidth} ${bogieWidth}"/>
     </geometry>
-    <material name="blue"/>
   </visual>
 
   <inertial>
@@ -149,11 +366,10 @@
 </link>
 
 <gazebo reference="${lr}_bogie">
-  <mu1 value="1.0"/>
-  <mu2 value="1.0"/>
-  <kp  value="0.0" />
-  <kd  value="0.0" />
-  <!-- <fdir1 value="1 0 0"/> -->
+  <mu1 value="100.0"/>
+  <mu2 value="100.0"/>
+  <kp  value="10000.0" />
+  <kd  value="1.0" />
   <material>Gazebo/Black</material>
 </gazebo>
 
@@ -163,8 +379,8 @@
   <child link="${lr}_bogie"/>
 <origin xyz="${rockerLengthFront*1.41/2} ${tY*rockerWidth/2+tY*bogieWidth/2} -${rockerLengthFront*1.41/2}" rpy="0 0 0" />
   <axis xyz="0 1 0" rpy="0 0 0" />
-  <limit effort="1" lower="${-PI/6}" upper="${PI/6}" velocity="0.0001"/>
-  <joint_properties damping="0.0" friction="0.0"/>
+  <limit effort="100" lower="${-PI/6}" upper="${PI/6}" velocity="0.0001"/>
+  <joint_properties damping="0.0  " friction="0.0"/>
 </joint>
 
 
@@ -198,40 +414,57 @@
 </link>
 
 <gazebo reference="${lr}_${fmb}_wheel">
-  <mu1 value="200.0"/>
+  <mu1 value="100.0"/>
   <mu2 value="100.0"/>
-  <kp  value="100000000.0" />
+  <kp  value="100000.0" />
   <kd  value="1.0" />
-  <!-- <fdir1 value="1 0 0"/> -->
   <material>Gazebo/Black</material>
 </gazebo>
 
 
 <joint name="${lr}_${fmb}_wheel_hinge" type="continuous">
+  <axis xyz="0 1 0" rpy="0 0 0" />
   <parent link="${lr}_${rb}"/>
   <child link="${lr}_${fmb}_wheel"/>
 
-<origin xyz="${tX*length_rb*1.41/2} ${tY*width_rb/2+tY*wheelWidth/2} ${tZ*length_rb*1.41/2}" rpy="0 0 0" />
-  <axis xyz="0 1 0" rpy="0 0 0" />
-  <limit effort="1" velocity="0"/>
-  <joint_properties damping="0.1" friction="0.02"/>
+  <origin xyz="${tX*length_rb*1.41/2} ${tY*width_rb/2+tY*wheelWidth/2} ${tZ*length_rb*1.41/2}" rpy="0 0 0" />
+  
+  <!-- <limit effort="1" velocity="0"/>
+  <joint_properties damping="0.1" friction="0.02"/> -->
 </joint>
 
 
-<transmission name="${lr}_${fmb}_trans">
+<!-- <transmission name="${lr}_${fmb}_trans">
   <type>transmission_interface/SimpleTransmission</type>
 
   <actuator name="${lr}_${fmb}_Motor">
-    <!-- <hardwareInterface>EffortJointInterface</hardwareInterface> -->
+    <hardwareInterface>EffortJointInterface</hardwareInterface> 
     <mechanicalReduction>10</mechanicalReduction>
   </actuator>
 
   <joint name="${lr}_${fmb}_wheel_hinge">
-      <hardwareInterface>VelocityJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+  </joint>z
+
+</transmission> 
+-->
+
+<transmission name="${lr}_${fmb}_trans">
+
+  <type>transmission_interface/SimpleTransmission</type>
+
+  <joint name="${lr}_${fmb}_wheel_hinge">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
   </joint>
+
+  <actuator name="${lr}_${fmb}_Motor">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
 
 </transmission>
 
 </xacro:macro>
+
 
 </robot>

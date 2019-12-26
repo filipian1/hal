@@ -1,0 +1,5 @@
+<joint name="imu" type="fixed">
+  <parent link="base_link"/>
+  <child link="imu"/>
+  <origin xyz="0 0 ${chassisHeight/2 + imuSize/2}" rpy="0 0 0" />
+</joint>

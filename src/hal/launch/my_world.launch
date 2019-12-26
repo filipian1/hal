@@ -2,19 +2,14 @@
 
 
 <launch>
-  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <!-- Arguments given to the empty world launch file-->
   <arg name="paused" default="true"/>
   <arg name="gui" default="true"/>
   <arg name="debug" default="false"/>
   <arg name="world" default="$(find hal)/worlds/empty_world2.world" />
+  <arg name="rvizconfig" default="$(find hal)/rviz/urdf.rviz" />
 
-
-<!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
-<param name="robot_description" command="$(find xacro)/xacro '$(find hal)/urdf/my1model.xacro'" />
-
-<!-- push robot_description to factory and spawn robot in gazebo -->
-<node name="mybot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen"
- args="-urdf -param robot_description -model my1model" />
+   <arg name="use_tf_static" default="false"/> 
 
 
 
@@ -24,8 +19,87 @@
   <arg name="gui" value="$(arg gui)"/>
   <arg name="paused" value="$(arg paused)"/>
   <arg name="use_sim_time" value="true"/>
-
-
 </include>
+
+
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" />
+
+
+<!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
+<param name="robot_description" command="$(find xacro)/xacro '$(find hal)/urdf/my1model.urdf'" />
+
+
+<!-- push robot_description to factory and spawn robot in gazebo -->
+<node name="mybot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen"
+ args="-unpause -urdf -param robot_description -model my1model" />
+
+<!-- NOWE -->
+
+<rosparam command="load"
+            file="$(find hal)/config/joints.yaml"
+            ns="my1model_joint_state_controller" />
+
+
+<!-- Loading of the diffdrive.yaml file, it's neccessary for my1model_controller_spawner -->
+<rosparam command="load" file="$(find hal)/config/diffdrive.yaml" ns="my1model_diff_drive_controller" />
+
+<!-- potrzebne aby dzialal RVIZ-->
+<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
+
+
+<node pkg="robot_state_publisher" type="robot_state_publisher"  name="state_publisher">
+    <param name="publish_frequency" type="double" value="30.0" />
+     <!-- <param name="use_tf_static" value="$(arg use_tf_static)"/> -->
+  </node>
+
+
+<node name="my1model_controller_spawner" pkg="controller_manager" type="spawner"
+    args="my1model_joint_state_controller my1model_diff_drive_controller">
+    
+    <remap from="my1model_diff_drive_controller/odom" to="example/odom"/>
+
+</node>
+
+
+<node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
+    <param name="default_topic" value="/my1model_diff_drive_controller/cmd_vel"/>
+  </node>
+
+<node pkg="robot_localization" type="ekf_localization_node" name="ekf_global" clear_params="true">
+    <rosparam command="load" file="$(find hal)/params/ekf_global_params.yaml" />
+    <remap from="odometry/filtered" to="odometry/twice_filtered"/>
+</node>
+
+<node pkg="robot_localization" type="ekf_localization_node" name="ekf_local" clear_params="true">
+    <rosparam command="load" file="$(find hal)/params/ekf_local_params.yaml" />
+    <remap from="odometry/filtered" to="odometry/once_filtered"/>
+</node>
+
+<arg name="map_file" default="$(find hal)/maps/crawler_map.yaml" />
+
+<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+<!-- <node name="slam_gmapping" pkg="gmapping" type="slam_gmapping">
+    <remap from="/scan" to="/lidar/scan"/>
+    <param name="base_frame" value="base_link"/>
+</node> -->
+
+
+<!-- Run AMCL --> 
+    <include file="$(find amcl)/examples/amcl_diff.launch" >
+          <remap from="scan" to="lidar/scan"/>
+    </include>
+
+
+   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find hal)/config/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find hal)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find hal)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find hal)/config/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find hal)/config/base_local_planner_params.yaml" command="load" />
+ </node>
+
+
+
 
 </launch>
