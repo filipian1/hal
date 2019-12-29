@@ -2,8 +2,10 @@
 type: "diff_drive_controller/DiffDriveController"
 publish_rate: 50
 
-left_wheel: ['left_front_wheel_hinge', 'left_middle_wheel_hinge', 'left_back_wheel_hinge']
-right_wheel:  ['right_front_wheel_hinge', 'right_middle_wheel_hinge', 'right_back_wheel_hinge']
+# left_wheel: ['left_front_wheel_hinge', 'left_middle_wheel_hinge', 'left_back_wheel_hinge']
+# right_wheel:  ['right_front_wheel_hinge', 'right_middle_wheel_hinge', 'right_back_wheel_hinge']
+left_wheel: 'left_middle_wheel_hinge'
+right_wheel:  'right_middle_wheel_hinge'
 wheel_separation: 0.33 
 #TODO: FIX THE PID
 # pid: {p: 100.0, i: 0.01,d : 10.0}

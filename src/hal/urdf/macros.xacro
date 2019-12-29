@@ -167,6 +167,60 @@
 </xacro:macro>
 
 
+<xacro:macro name="gps">
+
+
+<link name="gps">
+
+<collision>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <box size="${gpsSize} ${gpsSize} ${gpsSize}"/>
+    </geometry>
+</collision>
+
+  <visual>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+            <box size="${gpsSize} ${gpsSize} ${gpsSize}"/>
+    </geometry>
+
+  </visual>
+
+  <inertial>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="${gpsMass}"/>
+      <box_inertia m="${gpsMass}" x="${gpsSize}" y="${gpsSize}" z="${gpsSize}"/>
+
+  </inertial>
+</link>
+
+<joint name="gps_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="gps"/>
+  <origin xyz="0 0 ${-chassisHeight/2 - gpsSize/2}" rpy="0 0 0" />
+</joint>
+
+<gazebo>
+    <plugin name="novatel_gps_sim" filename="libhector_gazebo_ros_gps.so">
+      <alwaysOn>1</alwaysOn>
+      <updateRate>10.0</updateRate>
+      <bodyName>base_link</bodyName>
+      <topicName>gps/fix</topicName>
+      <velocityTopicName>gps/fix_velocity</velocityTopicName>
+      <drift>5.0 5.0 5.0</drift>
+      <gaussianNoise>0.1 0.1 0.1</gaussianNoise>
+      <velocityDrift>0 0 0</velocityDrift>
+      <velocityGaussianNoise>0.1 0.1 0.1</velocityGaussianNoise>
+
+    </plugin>
+  </gazebo>
+
+
+
+</xacro:macro>
+
+
 <xacro:macro name="lidar">
 
 <link name="lidar">
@@ -229,7 +283,7 @@
         </noise>
       </ray>
       <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
-        <topicName>lidar/scan</topicName>
+        <topicName>scan</topicName>
         <frameName>lidar</frameName>
       </plugin>
     </sensor>
@@ -240,7 +294,9 @@
 <joint name="lidar" type="fixed">
   <parent link="base_link"/>
   <child link="lidar"/>
-  <origin xyz="${chassisLength/2 - lidarSize/2} 0 ${-chassisHeight/2 - lidarSize/2}" rpy="${PI} 0 0" />
+  <!-- <origin xyz="${chassisLength/2 - lidarSize/2} 0 ${-chassisHeight/2 - lidarSize/2}" rpy="${PI} 0 0" /> -->
+    <origin xyz="${chassisLength/2 - lidarSize/2} 0 ${chassisHeight/2 +cameraSize + lidarSize/2+0.01}" rpy="0 0 0" />
+
 </joint>
 
 
@@ -429,25 +485,8 @@
 
   <origin xyz="${tX*length_rb*1.41/2} ${tY*width_rb/2+tY*wheelWidth/2} ${tZ*length_rb*1.41/2}" rpy="0 0 0" />
   
-  <!-- <limit effort="1" velocity="0"/>
-  <joint_properties damping="0.1" friction="0.02"/> -->
 </joint>
 
-
-<!-- <transmission name="${lr}_${fmb}_trans">
-  <type>transmission_interface/SimpleTransmission</type>
-
-  <actuator name="${lr}_${fmb}_Motor">
-    <hardwareInterface>EffortJointInterface</hardwareInterface> 
-    <mechanicalReduction>10</mechanicalReduction>
-  </actuator>
-
-  <joint name="${lr}_${fmb}_wheel_hinge">
-      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-  </joint>z
-
-</transmission> 
--->
 
 <transmission name="${lr}_${fmb}_trans">
 
@@ -466,5 +505,102 @@
 
 </xacro:macro>
 
+
+
+<xacro:macro name="wheel2" params="lr tY fmb tX rb tZ width_rb length_rb">
+
+<link name="${lr}_${fmb}_wheel">
+  <collision>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} ${PI/2}" />
+    <geometry>
+      <cylinder length="${wheelWidth}" radius="${wheelRadius}"/>
+    </geometry>
+  </collision>
+
+  <visual>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} ${PI/2}" />
+    <geometry>
+      <cylinder length="${wheelWidth}" radius="${wheelRadius}"/>
+    </geometry>
+    <material name="black"/>
+  </visual>
+
+  <inertial>
+    <origin xyz="0 0 0" rpy="0 ${PI/2} ${PI/2}" />
+   <mass value="${wheelMass}"/>
+    <cylinder_inertia m="${wheelMass}" r="${wheelRadius}" h="${wheelWidth}"/> 
+</inertial>
+</link>
+
+<gazebo reference="${lr}_${fmb}_wheel">
+  <mu1 value="100.0"/>
+  <mu2 value="100.0"/>
+  <kp  value="100000.0" />
+  <kd  value="1.0" />
+  <material>Gazebo/Black</material>
+</gazebo>
+
+
+<joint name="${lr}_${fmb}_wheel_hinge" type="continuous">
+  <axis xyz="0 1 0" rpy="0 0 0" />
+  <parent link="base_link"/>
+  <child link="${lr}_${fmb}_wheel"/>
+
+  <origin xyz="0 ${tY*chassisWidth/2+tY*wheelWidth/2} 0" rpy="0 0 0" />
+  
+</joint>
+
+
+<transmission name="${lr}_${fmb}_trans">
+
+  <type>transmission_interface/SimpleTransmission</type>
+
+  <joint name="${lr}_${fmb}_wheel_hinge">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+  </joint>
+
+  <actuator name="${lr}_${fmb}_Motor">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+
+</transmission>
+
+</xacro:macro>
+
+
+  <xacro:macro name="sphere_inertia" params="m r">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${2.0*m*(r*r)/5.0}" ixy="0.0" ixz="0.0" iyy="${2.0*m*(r*r)/5.0}" iyz="0.0" izz="${2.0*m*(r*r)/5.0}"/>
+    </inertial>
+  </xacro:macro>
+ 
+ <xacro:macro name="caster" params="fb tX">
+
+   <link name="${fb}_caster_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${caster_wheel_radius}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${caster_wheel_radius}"/>
+      </geometry>
+    </collision>
+    <xacro:sphere_inertia m="5" r="${caster_wheel_radius}"/>
+  </link>
+ 
+  <joint name="${fb}_caster_wheel_joint" type="continuous">
+    <axis xyz="0 1 0" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="${fb}_caster_wheel"/>
+    <origin xyz="${tX*chassisLength/2-tX*caster_wheel_radius} 0 ${-chassisHeight/2}" rpy="0 0 0"/>
+  </joint>
+
+</xacro:macro>
 
 </robot>

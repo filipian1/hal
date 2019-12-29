@@ -1,5 +1,30 @@
-<joint name="imu" type="fixed">
+<link name="gps">
+
+<collision>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <box size="${gpsSize} ${gpsSize} ${gpsSize}"/>
+    </geometry>
+</collision>
+
+  <visual>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+            <box size="${gpsSize} ${gpsSize} ${gpsSize}"/>
+    </geometry>
+
+  </visual>
+
+  <inertial>
+  <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="${gpsMass}"/>
+      <box_inertia m="${gpsMass}" x="${gpsSize}" y="${gpsSize}" z="${gpsSize}"/>
+
+  </inertial>
+</link>
+
+<joint name="gps_joint" type="fixed">
   <parent link="base_link"/>
-  <child link="imu"/>
-  <origin xyz="0 0 ${chassisHeight/2 + imuSize/2}" rpy="0 0 0" />
+  <child link="gps"/>
+  <origin xyz="0 0 ${chassisHeight/2 + gpsSize/2}" rpy="0 0 0" />
 </joint>

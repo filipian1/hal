@@ -19,6 +19,8 @@
   <arg name="gui" value="$(arg gui)"/>
   <arg name="paused" value="$(arg paused)"/>
   <arg name="use_sim_time" value="true"/>
+
+
 </include>
 
 
@@ -35,16 +37,15 @@
 
 <!-- NOWE -->
 
-<rosparam command="load"
-            file="$(find hal)/config/joints.yaml"
-            ns="my1model_joint_state_controller" />
+<rosparam command="load" file="$(find hal)/config/joints.yaml" ns="my1model_joint_state_controller"/>
 
 
 <!-- Loading of the diffdrive.yaml file, it's neccessary for my1model_controller_spawner -->
 <rosparam command="load" file="$(find hal)/config/diffdrive.yaml" ns="my1model_diff_drive_controller" />
 
 <!-- potrzebne aby dzialal RVIZ-->
-<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
+<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+</node>
 
 
 <node pkg="robot_state_publisher" type="robot_state_publisher"  name="state_publisher">
@@ -55,40 +56,58 @@
 
 <node name="my1model_controller_spawner" pkg="controller_manager" type="spawner"
     args="my1model_joint_state_controller my1model_diff_drive_controller">
-    
-    <remap from="my1model_diff_drive_controller/odom" to="example/odom"/>
+     <!-- <remap from="/my1model_diff_drive_controller/cmd_vel" to="/cmd_vel"/> -->
+    <!-- <remap from="my1model_diff_drive_controller/odom" to="example/odom"/> -->
 
 </node>
 
 
 <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
-    <param name="default_topic" value="/my1model_diff_drive_controller/cmd_vel"/>
+    <param name="default_topic" value="my1model_diff_drive_controller/cmd_vel"/>
   </node>
 
 <node pkg="robot_localization" type="ekf_localization_node" name="ekf_global" clear_params="true">
     <rosparam command="load" file="$(find hal)/params/ekf_global_params.yaml" />
+
     <remap from="odometry/filtered" to="odometry/twice_filtered"/>
+    <remap from="cmd_vel" to="my1model_diff_drive_controller/cmd_vel"/>
+    <remap from="set_pose" to="initialpose"/>
 </node>
 
 <node pkg="robot_localization" type="ekf_localization_node" name="ekf_local" clear_params="true">
     <rosparam command="load" file="$(find hal)/params/ekf_local_params.yaml" />
+
     <remap from="odometry/filtered" to="odometry/once_filtered"/>
+    <remap from="cmd_vel" to="my1model_diff_drive_controller/cmd_vel"/>
+    <remap from="set_pose" to="initialpose"/>
+</node> 
+
+
+ <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" clear_params="true">
+     <rosparam command="load" file="$(find hal)/params/navsat_params.yaml" />
+
+    <remap from="odometry/filtered" to="odometry/twice_filtered"/>
+    <remap from="/imu/data" to="imu/data" />
+    <remap from="/gps/fix" to="gps/fix" />
+    <!-- <remap from="/odometry/filtered" to="/your/robot_localization/output/topic" /> -->
 </node>
 
 <arg name="map_file" default="$(find hal)/maps/crawler_map.yaml" />
 
 <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
-<!-- <node name="slam_gmapping" pkg="gmapping" type="slam_gmapping">
-    <remap from="/scan" to="/lidar/scan"/>
-    <param name="base_frame" value="base_link"/>
-</node> -->
+<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping">
+    <param name="base_frame" value="base_footprint"/>
+    <param name="odom_frame" value="odom" />
+    <param name="delta" value="0.1" />
+    <param name="transform_publish_period" value="0" />
+</node>
 
 
 <!-- Run AMCL --> 
-    <include file="$(find amcl)/examples/amcl_diff.launch" >
+    <!-- <include file="$(find amcl)/examples/amcl_diff.launch" >
           <remap from="scan" to="lidar/scan"/>
-    </include>
+    </include> -->
 
 
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
@@ -97,6 +116,8 @@
     <rosparam file="$(find hal)/config/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find hal)/config/global_costmap_params.yaml" command="load" /> 
     <rosparam file="$(find hal)/config/base_local_planner_params.yaml" command="load" />
+    <remap from="odom" to="odometry/twice_filtered"/>
+    <remap from="cmd_vel" to="my1model_diff_drive_controller/cmd_vel"/>
  </node>
 
 
