@@ -49,7 +49,7 @@
 
 
 <node pkg="robot_state_publisher" type="robot_state_publisher"  name="state_publisher">
-    <param name="publish_frequency" type="double" value="30.0" />
+    <param name="publish_frequency" type="double" value="10.0" />
      <!-- <param name="use_tf_static" value="$(arg use_tf_static)"/> -->
   </node>
 
@@ -61,6 +61,15 @@
 
 </node>
 
+<!-- PRZESUWANIE PRZY POMOCY TYCH STRZALEK I KOLKA -->
+
+<!-- <arg name="config" default="linear" />
+
+  <node pkg="interactive_marker_twist_server" type="marker_server" name="twist_marker_server">
+    <rosparam command="load" file="$(find interactive_marker_twist_server)/config/$(arg config).yaml" />
+  </node> -->
+
+
 
 <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
     <param name="default_topic" value="my1model_diff_drive_controller/cmd_vel"/>
@@ -69,39 +78,72 @@
 <node pkg="robot_localization" type="ekf_localization_node" name="ekf_global" clear_params="true">
     <rosparam command="load" file="$(find hal)/params/ekf_global_params.yaml" />
 
-    <remap from="odometry/filtered" to="odometry/twice_filtered"/>
-    <remap from="cmd_vel" to="my1model_diff_drive_controller/cmd_vel"/>
-    <remap from="set_pose" to="initialpose"/>
+    <!-- <remap from="/imu/data" to="/imu/data" /> -->
+    <remap from="odometry/filtered" to="odometry/ekf_global"/>
+ 
 </node>
+
+<!-- <node pkg="robot_localization" type="ekf_localization_node" name="ekf_global_just_GPS" clear_params="true">
+    <rosparam command="load" file="$(find hal)/params/ekf_global_params_just_GPS.yaml" />
+    <remap from="odometry/filtered" to="odometry/ekf_global_just_GPS"/>
+ 
+</node> -->
+
+<!-- <node pkg="robot_localization" type="ukf_localization_node" name="ukf_global" clear_params="true">
+    <rosparam command="load" file="$(find hal)/params/ukf_global_params.yaml" />
+
+    <remap from="/imu/data" to="/imu/data" />
+    <remap from="odometry/filtered" to="odometry/ukf_global"/>
+ 
+</node> -->
 
 <node pkg="robot_localization" type="ekf_localization_node" name="ekf_local" clear_params="true">
     <rosparam command="load" file="$(find hal)/params/ekf_local_params.yaml" />
 
-    <remap from="odometry/filtered" to="odometry/once_filtered"/>
-    <remap from="cmd_vel" to="my1model_diff_drive_controller/cmd_vel"/>
-    <remap from="set_pose" to="initialpose"/>
+    <remap from="odometry/filtered" to="odometry/ekf_local"/>
+    
 </node> 
 
+<node pkg="hal" type="convert_GPS_to_xy.py" name="convert_GPS_to_xy_noised">
+  <remap from="odometry/gps/converted" to="odometry/gps/noised"/>
+  <remap from="fix_velocity" to="noised/fix_velocity"/>
+  <remap from="fix" to="noised/fix"/>
+</node>
 
- <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" clear_params="true">
+
+
+<node pkg="hal" type="convert_GPS_to_xy.py" name="convert_GPS_to_xy_precise">
+   <!-- <arg name="use_sim_time" value="true"/> -->
+
+ 
+ 
+  <remap from="odometry/gps/converted" to="odometry/gps/precise"/>
+  <remap from="fix_velocity" to="precise/fix_velocity"/>
+  <remap from="fix" to="precise/fix"/>
+
+</node>
+
+<!-- <node pkg="hal" type="simple_fusion.py" name="simple_fusion"/>  -->
+
+ <!-- <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" clear_params="true">
      <rosparam command="load" file="$(find hal)/params/navsat_params.yaml" />
 
-    <remap from="odometry/filtered" to="odometry/twice_filtered"/>
-    <remap from="/imu/data" to="imu/data" />
-    <remap from="/gps/fix" to="gps/fix" />
-    <!-- <remap from="/odometry/filtered" to="/your/robot_localization/output/topic" /> -->
-</node>
+    <remap from="odometry/filtered" to="odometry/ekf_local"/>
+    <remap from="gps/fix" to="noised/fix"/>
+     <arg name="use_sim_time" value="true"/> 
+
+</node> -->
 
 <arg name="map_file" default="$(find hal)/maps/crawler_map.yaml" />
 
 <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
-<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping">
+<!-- <node name="slam_gmapping" pkg="gmapping" type="slam_gmapping">
     <param name="base_frame" value="base_footprint"/>
-    <param name="odom_frame" value="odom" />
+    <param name="odom_frame" value="map" />
     <param name="delta" value="0.1" />
     <param name="transform_publish_period" value="0" />
-</node>
+</node> -->
 
 
 <!-- Run AMCL --> 
@@ -116,7 +158,10 @@
     <rosparam file="$(find hal)/config/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find hal)/config/global_costmap_params.yaml" command="load" /> 
     <rosparam file="$(find hal)/config/base_local_planner_params.yaml" command="load" />
-    <remap from="odom" to="odometry/twice_filtered"/>
+    <rosparam file="$(find jackal_navigation)/params/move_base_params.yaml" command="load" />
+
+    <remap from="odom" to="odometry/ekf_global"/>
+    <!-- <remap from="odom" to="my1model_diff_drive_controller/odom"/> -->
     <remap from="cmd_vel" to="my1model_diff_drive_controller/cmd_vel"/>
  </node>
 

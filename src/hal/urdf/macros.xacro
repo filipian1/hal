@@ -64,7 +64,7 @@
       <material>Gazebo/Red</material>
 
     <sensor type="camera" name="camera1">
-      <update_rate>30.0</update_rate>
+      <update_rate>10.0</update_rate>
 
       <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
       <!-- <horizontal_fov>0.5</horizontal_fov>
@@ -167,10 +167,10 @@
 </xacro:macro>
 
 
-<xacro:macro name="gps">
+<xacro:macro name="gps" params="freq color name shift drift noise vel_drift vel_noise">
 
 
-<link name="gps">
+<link name="gps_${name}">
 
 <collision>
   <origin xyz="0 0 0" rpy="0 0 0" />
@@ -195,25 +195,32 @@
   </inertial>
 </link>
 
-<joint name="gps_joint" type="fixed">
+<joint name="gps_joint_${name}" type="fixed">
   <parent link="base_link"/>
-  <child link="gps"/>
-  <origin xyz="0 0 ${-chassisHeight/2 - gpsSize/2}" rpy="0 0 0" />
+  <child link="gps_${name}"/>
+  <origin xyz="0 0 ${-chassisHeight/2 - gpsSize/2-shift}" rpy="0 0 0" />
 </joint>
 
 <gazebo>
-    <plugin name="novatel_gps_sim" filename="libhector_gazebo_ros_gps.so">
-      <alwaysOn>1</alwaysOn>
-      <updateRate>10.0</updateRate>
-      <bodyName>base_link</bodyName>
-      <topicName>gps/fix</topicName>
-      <velocityTopicName>gps/fix_velocity</velocityTopicName>
-      <drift>5.0 5.0 5.0</drift>
-      <gaussianNoise>0.1 0.1 0.1</gaussianNoise>
-      <velocityDrift>0 0 0</velocityDrift>
-      <velocityGaussianNoise>0.1 0.1 0.1</velocityGaussianNoise>
+  <material>Gazebo/${color}</material>
 
-    </plugin>
+  <plugin name="gps_controller" filename="libhector_gazebo_ros_gps.so">
+    <alwaysOn>true</alwaysOn>
+    <updateRate>${freq}</updateRate>
+    <robotNamespace>${name}</robotNamespace>
+    <bodyName>gps_${name}</bodyName>
+    <frameId>map</frameId>
+    <!-- <topicname>/gps/fix</topicname>
+    <velocitytopicname>/gps/fix_velocity</velocitytopicname> -->
+    <!-- <drift>5.0 5.0 5.0</drift> -->
+    <drift>${drift} ${drift} ${drift}</drift>
+    <gaussianNoise>${noise} ${noise} ${noise}</gaussianNoise>
+    <!-- <driftFrequency>${noise} ${noise} ${noise}</driftFrequency> -->
+    <velocityDrift>${vel_drift} ${vel_drift} ${vel_drift}</velocityDrift>
+    <velocityGaussianNoise>${vel_noise} ${vel_noise} ${vel_noise}</velocityGaussianNoise>
+
+    <!-- <velocitygaussiannoise>0.1 0.1 0.1</velocitygaussiannoise> -->
+</plugin>
   </gazebo>
 
 

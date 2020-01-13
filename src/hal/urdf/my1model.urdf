@@ -40,8 +40,8 @@
 <xacro:property name="imuSize" value="0.04"/>
 <xacro:property name="imuMass" value="0.04"/>
 
-<xacro:property name="gpsSize" value="0.02"/>
-<xacro:property name="gpsMass" value="0.02"/>
+<xacro:property name="gpsSize" value="0.01"/>
+<xacro:property name="gpsMass" value="0.01"/>
 
  <xacro:include filename="$(find hal)/urdf/materials.xacro" />
  <xacro:include filename="$(find hal)/urdf/macros.xacro" />
@@ -69,8 +69,8 @@
 <joint name="base_joint" type="fixed">
   <parent link="base_footprint"/>
   <child link="base_link"/>
-  <!-- <origin xyz="0 0 ${wheelRadius+rockerLengthBack*1.41/2}" rpy="0 0 0"/> -->
-  <origin xyz="0 0 ${wheelRadius}" rpy="0 0 0"/>
+  <origin xyz="0 0 ${wheelRadius+rockerLengthBack*1.41/2}" rpy="0 0 0"/>
+  <!-- <origin xyz="0 0 ${wheelRadius}" rpy="0 0 0"/> -->
 
 </joint>
 
@@ -121,8 +121,8 @@
 <lidar/>
 <imu/>
 <camera/>
-<gps/>
-
+<gps freq="1.0" color="Red" name="noised" shift="${gpsSize}" drift="0.0" noise="0.0" vel_drift="0.0" vel_noise="0.0"/>
+<gps freq="10" color="Blue" name="precise" shift="0" drift="0" noise="0.0" vel_drift="0" vel_noise="0.0"/>
 <!-- 
   
   <link name="camera_link">
@@ -193,7 +193,7 @@
 
 <gazebo>
   <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-    <robotNamespace>/</robotNamespace>
+    <robotNamespace></robotNamespace>
   </plugin>
 </gazebo>
 

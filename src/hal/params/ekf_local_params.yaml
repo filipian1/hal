@@ -1,7 +1,7 @@
 # The frequency, in Hz, at which the filter will output a position estimate. Note that the filter will not begin
 # computation until it receives at least one message from one of the inputs. It will then run continuously at the
 # frequency specified here, regardless of whether it receives more measurements. Defaults to 30 if unspecified.
-frequency: 30
+frequency: 10
 
 # The period, in seconds, after which we consider a sensor to have timed out. In this event, we carry out a predict
 # cycle on the EKF without correcting it. This parameter can be thought of as the minimum frequency with which the
@@ -18,6 +18,9 @@ two_d_mode: true
 # future dating the transform, which is required for interaction with some other packages. Defaults to 0.0 if
 # unspecified.
 transform_time_offset: 0.0
+
+predict_to_current_time: true
+
 
 # Use this parameter to provide specify how long the tf listener should wait for a transform to become available. 
 # Defaults to 0.0 if unspecified.
@@ -41,6 +44,8 @@ publish_tf: true
 # Whether to publish the acceleration state. Defaults to false if unspecified.
 publish_acceleration: false
 
+#useful with rosbags
+reset_on_time_jump: true
 # REP-105 (http://www.ros.org/reps/rep-0105.html) specifies four principal coordinate frames: base_link, odom, map, and
 # earth. base_link is the coordinate frame that is affixed to the robot. Both odom and map are world-fixed frames.
 # The robot's position in the odom frame will drift over time, but is accurate in the short term and should be
@@ -79,10 +84,10 @@ odom0: my1model_diff_drive_controller/odom
 # do not provide some of the state variables estimated by the filter. For example, a TwistWithCovarianceStamped message
 # has no pose information, so the first six values would be meaningless in that case. Each vector defaults to all false
 # if unspecified, effectively making this parameter required for each sensor.
-odom0_config: [false,  false,  false,
-               false, false, true,
-               true, false, false,
+odom0_config: [false, false, false,
                false, false, false,
+               true, true, false,
+               false, false, true,
                false, false, false]
 
 # If you have high-frequency data or are running with a low frequency parameter value, then you may want to increase
@@ -92,7 +97,7 @@ odom0_queue_size: 20
 # [ADVANCED] Large messages in ROS can exhibit strange behavior when they arrive at a high frequency. This is a result
 # of Nagle's algorithm. This option tells the ROS subscriber to use the tcpNoDelay option, which disables Nagle's
 # algorithm.
-odom0_nodelay: false
+odom0_nodelay: true
 
 # [ADVANCED] When measuring one pose variable with two sensors, a situation can arise in which both sensors under-
 # report their covariances. This can lead to the filter rapidly jumping back and forth between each measurement as they
@@ -116,8 +121,8 @@ odom0_relative: false
 # required. Data is specified at the level of pose and twist variables, rather than for each variable in isolation.
 # For messages that have both pose and twist data, the parameter specifies to which part of the message we are applying
 # the thresholds.
-odom0_pose_rejection_threshold: 5
-odom0_twist_rejection_threshold: 1
+# odom0_pose_rejection_threshold: 5
+# odom0_twist_rejection_threshold: 1
 
 # # Further input parameter examples
 # odom1: odometry/gps
@@ -160,14 +165,14 @@ imu0_config: [false, false, false,
               true,  true,  true,
               false, false, false,
               true,  true,  true,
-              true,  true,  true]
-imu0_nodelay: false
+              false, false, false]
 imu0_differential: false
-imu0_relative: true
+imu0_relative: false
+imu0_nodelay: true
 imu0_queue_size: 5
-imu0_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
-imu0_twist_rejection_threshold: 0.8                #
-imu0_linear_acceleration_rejection_threshold: 0.8  #
+# imu0_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
+# imu0_twist_rejection_threshold: 0.8                #
+# imu0_linear_acceleration_rejection_threshold: 0.8  #
 
 # [ADVANCED] Some IMUs automatically remove acceleration due to gravity, and others don't. If yours doesn't, please set
 # this to true, and *make sure* your data conforms to REP-103, specifically, that the data is in ENU frame.
@@ -187,7 +192,7 @@ imu0_remove_gravitational_acceleration: false
 # predicition. Note that if an acceleration measurement for the variable in question is available from one of the
 # inputs, the control term will be ignored.
 # Whether or not we use the control input during predicition. Defaults to false.
-use_control: true
+use_control: false
 # Whether the input (assumed to be cmd_vel) is a geometry_msgs/Twist or geometry_msgs/TwistStamped message. Defaults to
 # false.
 stamped_control: false
@@ -214,7 +219,7 @@ deceleration_gains: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 # to be larger, which will cause the filter to trust the incoming measurement more during correction. The values are
 # ordered as x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az. Defaults to the matrix below if
 # unspecified.
-process_noise_covariance: [0.05, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+process_noise_covariance: [0.01, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0.05, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0,    0.06, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
                            0,    0,    0,    0.03, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
